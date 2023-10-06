@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.6.0](https://github.com/shaka-project/shaka-player/compare/v4.5.0...v4.6.0) (2023-10-06)
+
+
+### Features
+
+* Stop setting playbackRate to 0 to control buffering state ([#5696](https://github.com/shaka-project/shaka-player/issues/5696)) ([6156dce](https://github.com/shaka-project/shaka-player/commit/6156dced6bddc5e2cd0cc52071295cff63cadfcd))
+
+
+### Bug Fixes
+
+* For text content is not necessary codec switching ([#5731](https://github.com/shaka-project/shaka-player/issues/5731)) ([bdbaae5](https://github.com/shaka-project/shaka-player/commit/bdbaae5182c1f4f650822edb2a95246a918ad5df))
+* **HLS:** Fix init segment when EXT-X-MAP is preceded by EXT-X-BYTERANGE ([#5732](https://github.com/shaka-project/shaka-player/issues/5732)) ([24e5de3](https://github.com/shaka-project/shaka-player/commit/24e5de34ba2bd8a1e03204a1e8b96436c6aed296))
+* **HLS:** Fix url management in HLS ([#5722](https://github.com/shaka-project/shaka-player/issues/5722)) ([8deab71](https://github.com/shaka-project/shaka-player/commit/8deab717f358502b9c79a0fbd504531cc3173ddd))
+
 ## [4.5.0](https://github.com/shaka-project/shaka-player/compare/v4.4.0...v4.5.0) (2023-10-04)
 
 
