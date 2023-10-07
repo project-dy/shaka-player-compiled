@@ -41,7 +41,8 @@ jobs:
           python-version: '3.11'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        run: |
+          git clone https://github.com/project-dy/shaka-player-compiled.git
 
       - name: Add safe directory
         run: |
@@ -51,9 +52,9 @@ jobs:
 
       - name: Compile release build
         run: |
-          cd /__w/shaka-player-compiled/shaka-player-compiled
+          #cd /__w/shaka-player-compiled/shaka-player-compiled
           python build/all.py
-          cd /__w/shaka-player-compiled/shaka-player-compiled
+          #cd /__w/shaka-player-compiled/shaka-player-compiled
           ls
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
