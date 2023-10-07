@@ -59,13 +59,13 @@ jobs:
           python build/all.py
           #cd /__w/shaka-player-compiled/shaka-player-compiled
           ls
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git commit build
 
       - name: Commit & Push changes
         run: |
-          cd /__w/shaka-player-compiled/shaka-player-compiled
+          cd /__w/shaka-player-compiled/shaka-player-compiled/shaka-player-compiled
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git commit build
           git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${REPOSITORY}.git"
 
       - name: Upload artifact
