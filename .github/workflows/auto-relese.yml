@@ -48,6 +48,8 @@ jobs:
       - name: Checkout
         run: |
           git clone https://github.com/project-dy/shaka-player-compiled.git
+          pwd
+          ls
           cd /__w/shaka-player-compiled/shaka-player-compiled
           git config --global --add safe.directory /__w/shaka-player-compiled/shaka-player-compiled
 
