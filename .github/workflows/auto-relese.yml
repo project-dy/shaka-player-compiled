@@ -1,0 +1,69 @@
+name: Compile release build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore: 
+      - 'dist/**'
+
+  release:
+    types: [published]
+
+
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:   
+  build_and_upload:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ubuntu:devel
+      env:
+        DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: Setup Python3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Add safe directory
+        run: |
+          apt update
+          apt install -y git curl
+          git config --global --add safe.directory /__w/shaka-player-compiled/shaka-player-compiled
+
+      - name: Compile release build
+        run: |
+          cd /__w/shaka-player-compiled/shaka-player-compiled
+          python build/all.py
+          git commit build
+
+      - name: Commit & Push changes
+        run: |
+          cd /__w/shaka-player-compiled/shaka-player-compiled
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${REPOSITORY}.git"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: Release build
+          path: target/release/shaka-player-compiled
