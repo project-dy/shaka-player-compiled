@@ -53,8 +53,10 @@ jobs:
         run: |
           cd /__w/shaka-player-compiled/shaka-player-compiled
           python build/all.py
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          cd /__w/shaka-player-compiled/shaka-player-compiled
+          ls
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           git commit build
 
       - name: Commit & Push changes
