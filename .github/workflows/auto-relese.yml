@@ -53,13 +53,13 @@ jobs:
         run: |
           cd /__w/shaka-player-compiled/shaka-player-compiled
           python build/all.py
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git commit build
 
       - name: Commit & Push changes
         run: |
           cd /__w/shaka-player-compiled/shaka-player-compiled
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
           git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${REPOSITORY}.git"
 
       - name: Upload artifact
