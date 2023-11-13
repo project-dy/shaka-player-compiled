@@ -688,23 +688,29 @@ describe('HlsParser live', () => {
       const partialRef = makeReference(
           'test:/partial.mp4', 0, 2, /* syncTime= */ null,
           /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ null);
+      partialRef.partial = true;
 
       const partialRef2 = makeReference(
           'test:/partial2.mp4', 2, 4, /* syncTime= */ null,
           /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ null);
+      partialRef2.partial = true;
+      partialRef2.lastPartial = true;
 
       const ref = makeReference(
           'test:/main.mp4', 0, 4, /* syncTime= */ null,
           /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ null,
           /* timestampOffset= */ 0, [partialRef, partialRef2]);
+      ref.allPartialSegments = true;
 
       const partialRef3 = makeReference(
           'test:/partial.mp4', 4, 6, /* syncTime= */ null,
           /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ null);
+      partialRef3.partial = true;
 
       const preloadRef = makeReference(
           'test:/partial.mp4', 6, 7.5, /* syncTime= */ null,
           /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ null);
+      preloadRef.partial = true;
       preloadRef.markAsPreload();
       preloadRef.markAsNonIndependent();
 
@@ -774,6 +780,7 @@ describe('HlsParser live', () => {
             'test:/ref1.mp4', 0, 4, /* syncTime= */ null,
             /* baseUri= */ '', /* startByte= */ 0, /* endByte= */ 429,
             /* timestampOffset= */ 0, [partialRef, partialRef2]);
+        ref.allPartialSegments = true;
 
         const partialRef3 = makeReference(
             'test:/ref2.mp4', 4, 6, /* syncTime= */ null,

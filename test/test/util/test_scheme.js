@@ -763,6 +763,12 @@ shaka.test.TestScheme.ManifestParser = class {
 
   /** @override */
   onExpirationUpdated() {}
+
+  /** @override */
+  onInitialVariantChosen() {}
+
+  /** @override */
+  banLocation() {}
 };
 
 
