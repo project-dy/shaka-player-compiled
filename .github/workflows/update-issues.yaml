@@ -6,7 +6,7 @@ on:
     # Allows for manual triggering.
   schedule:
     # Run every 30 minutes
-    - cron: '*/30 * * * *'
+    #- cron: '*/30 * * * *'
 
 permissions:
   issues: write
