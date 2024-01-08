@@ -61,6 +61,7 @@ jobs:
           cd /__w/shaka-player-compiled/shaka-player-compiled/shaka-player-compiled
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          git add .
           git commit build
           git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${REPOSITORY}.git"
 
