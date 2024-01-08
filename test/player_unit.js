@@ -1178,12 +1178,31 @@ describe('Player', () => {
           rebufferingGoal: 1,
           inaccurateManifestTolerance: 1,
           segmentPrefetchLimit: 1,
+          retryParameters: {
+            baseDelay: 2000,
+          },
+        },
+        manifest: {
+          retryParameters: {
+            baseDelay: 2000,
+          },
+        },
+        drm: {
+          retryParameters: {
+            baseDelay: 2000,
+          },
         },
       });
       expect(player.getConfiguration().streaming.rebufferingGoal).toBe(1);
       expect(player.getConfiguration().streaming.inaccurateManifestTolerance)
           .toBe(1);
       expect(player.getConfiguration().streaming.segmentPrefetchLimit).toBe(1);
+      expect(player.getConfiguration().streaming.retryParameters.baseDelay)
+          .toBe(2000);
+      expect(player.getConfiguration().manifest.retryParameters.baseDelay)
+          .toBe(2000);
+      expect(player.getConfiguration().drm.retryParameters.baseDelay)
+          .toBe(2000);
 
       // When low latency streaming gets enabled, rebufferingGoal will default
       // to 0.01 if unless specified, inaccurateManifestTolerance will
@@ -1194,6 +1213,12 @@ describe('Player', () => {
       expect(player.getConfiguration().streaming.inaccurateManifestTolerance)
           .toBe(0);
       expect(player.getConfiguration().streaming.segmentPrefetchLimit).toBe(2);
+      expect(player.getConfiguration().streaming.retryParameters.baseDelay)
+          .toBe(100);
+      expect(player.getConfiguration().manifest.retryParameters.baseDelay)
+          .toBe(100);
+      expect(player.getConfiguration().drm.retryParameters.baseDelay)
+          .toBe(100);
     });
   });
 
@@ -3482,6 +3507,37 @@ describe('Player', () => {
       const tracks = player.getVariantTracks();
       expect(tracks.length).toBe(1);
       expect(tracks[0].id).toBe(2);
+    });
+
+    it('removes based on frameRate', async () => {
+      manifest = shaka.test.ManifestGenerator.generate((manifest) => {
+        manifest.addVariant(0, (variant) => {
+          variant.addVideo(1, (stream) => {
+            stream.frameRate = 15;
+          });
+        });
+
+        manifest.addVariant(1, (variant) => {
+          variant.addVideo(2, (stream) => {
+            stream.frameRate = 30;
+          });
+        });
+
+        manifest.addVariant(2, (variant) => {
+          variant.addVideo(3, (stream) => {
+            stream.frameRate = 60;
+          });
+        });
+      });
+
+      await player.load(fakeManifestUri, 0, fakeMimeType);
+      expect(player.getVariantTracks().length).toBe(3);
+
+      player.configure({restrictions: {minFrameRate: 20, maxFrameRate: 40}});
+
+      const tracks = player.getVariantTracks();
+      expect(tracks.length).toBe(1);
+      expect(tracks[0].id).toBe(1);
     });
 
     it('removes the whole variant if one stream is restricted', async () => {
