@@ -521,7 +521,7 @@ shaka.extern.MetadataFrame;
  *   startTime: number,
  *   endTime: number,
  *   id: string,
- *   eventElement: Element
+ *   eventElement: ?shaka.extern.xml.Node
  * }}
  *
  * @description
@@ -539,7 +539,7 @@ shaka.extern.MetadataFrame;
  *   The presentation time (in seconds) that the region should end.
  * @property {string} id
  *   Specifies an identifier for this instance of the region.
- * @property {Element} eventElement
+ * @property {?shaka.extern.xml.Node} eventElement
  *   The XML element that defines the Event.
  * @exportDoc
  */
@@ -842,6 +842,28 @@ shaka.extern.InitDataTransform;
 
 /**
  * @typedef {{
+ *   tagName: !string,
+ *   attributes: !Object<string, string>,
+ *   children: !Array.<shaka.extern.xml.Node | string>,
+ *   parent: ?shaka.extern.xml.Node
+ * }}
+ *
+ * @description
+ *   Data structure for xml nodes as simple objects
+ *
+ * @property {!string} tagName
+ *   The name of the element
+ * @property {!object} attributes
+ *   The attributes of the element
+ * @property {!Array.<shaka.extern.xml.Node | string>} children
+ *   The child nodes or string body of the element
+ * @property {?shaka.extern.xml.Node} parent
+ *   The parent of the current element
+ */
+shaka.extern.xml.Node;
+
+/**
+ * @typedef {{
  *   clockSyncUri: string,
  *   ignoreDrmInfo: boolean,
  *   disableXlinkProcessing: boolean,
@@ -853,10 +875,11 @@ shaka.extern.InitDataTransform;
  *   ignoreEmptyAdaptationSet: boolean,
  *   ignoreMaxSegmentDuration: boolean,
  *   keySystemsByURI: !Object.<string, string>,
- *   manifestPreprocessor: function(!Element),
+ *   manifestPreprocessor: function(!shaka.extern.xml.Node),
  *   sequenceMode: boolean,
  *   enableAudioGroups: boolean,
- *   multiTypeVariantsAllowed: boolean
+ *   multiTypeVariantsAllowed: boolean,
+ *   useStreamOnceInPeriodFlattening: boolean
  * }}
  *
  * @property {string} clockSyncUri
@@ -906,7 +929,7 @@ shaka.extern.InitDataTransform;
  * @property {Object.<string, string>} keySystemsByURI
  *   A map of scheme URI to key system name. Defaults to default key systems
  *   mapping handled by Shaka.
- * @property {function(!Element)} manifestPreprocessor
+ * @property {function(!shaka.extern.xml.Node)} manifestPreprocessor
  *   Called immediately after the DASH manifest has been parsed into an
  *   XMLDocument. Provides a way for applications to perform efficient
  *   preprocessing of the manifest.
@@ -928,6 +951,12 @@ shaka.extern.InitDataTransform;
  *   Might result in undesirable behavior if mediaSource.codecSwitchingStrategy
  *   is not set to SMOOTH.
  *   Defaults to true if SMOOTH codec switching is supported, RELOAD overwise.
+ * @property {boolean} useStreamOnceInPeriodFlattening
+ *   If period combiner is used, this option ensures every stream is used
+ *   only once in period flattening. It speeds up underlying algorithm
+ *   but may raise issues if manifest does not have stream consistency
+ *   between periods.
+ *   Defaults to <code>false</code>.
  * @exportDoc
  */
 shaka.extern.DashManifestConfiguration;
@@ -1018,12 +1047,12 @@ shaka.extern.HlsManifestConfiguration;
 
 /**
  * @typedef {{
- *   manifestPreprocessor: function(!Element),
+ *   manifestPreprocessor: function(!shaka.extern.xml.Node),
  *   sequenceMode: boolean,
  *   keySystemsBySystemId: !Object.<string, string>
  * }}
  *
- * @property {function(!Element)} manifestPreprocessor
+ * @property {function(!shaka.extern.xml.Node)} manifestPreprocessor
  *   Called immediately after the MSS manifest has been parsed into an
  *   XMLDocument. Provides a way for applications to perform efficient
  *   preprocessing of the manifest.
@@ -1135,6 +1164,8 @@ shaka.extern.ManifestConfiguration;
  *   liveSyncPlaybackRate: number,
  *   liveSyncMinLatency: number,
  *   liveSyncMinPlaybackRate: number,
+ *   liveSyncPanicMode: boolean,
+ *   liveSyncPanicThreshold: number,
  *   allowMediaSourceRecoveries: boolean,
  *   minTimeBetweenRecoveries: number
  * }}
@@ -1236,7 +1267,7 @@ shaka.extern.ManifestConfiguration;
  *   If true, all emsg boxes are parsed and dispatched.
  * @property {boolean} observeQualityChanges
  *   If true, monitor media quality changes and emit
- *   <code.shaka.Player.MediaQualityChangedEvent</code>.
+ *   <code>shaka.Player.MediaQualityChangedEvent</code>.
  * @property {number} maxDisabledTime
  *   The maximum time a variant can be disabled when NETWORK HTTP_ERROR
  *   is reached, in seconds.
@@ -1272,6 +1303,14 @@ shaka.extern.ManifestConfiguration;
  *   Minimum playback rate used for latency chasing. It is recommended to use a
  *   value between 0 and 1. Effective only if liveSync is true. Defaults to
  *   <code>1</code>.
+ * @property {boolean} liveSyncPanicMode
+ *   If <code>true</code>, panic mode for live sync is enabled. When enabled,
+ *   will set the playback rate to the <code>liveSyncMinPlaybackRate</code>
+ *   until playback has continued past a rebuffering for longer than the
+ *   <code>liveSyncPanicThreshold</code>. Defaults to <code>false</code>.
+ * @property {number} liveSyncPanicThreshold
+ *   Number of seconds that playback stays in panic mode after a rebuffering.
+ *   Defaults to <code>60</code>
  * @property {boolean} allowMediaSourceRecoveries
  *   Indicate if we should recover from VIDEO_ERROR resetting Media Source.
  *   Defaults to <code>true</code>.
@@ -1289,7 +1328,8 @@ shaka.extern.StreamingConfiguration;
  *   codecSwitchingStrategy: shaka.config.CodecSwitchingStrategy,
  *   sourceBufferExtraFeatures: string,
  *   forceTransmux: boolean,
-*    insertFakeEncryptionInInit: boolean
+ *   insertFakeEncryptionInInit: boolean,
+ *   modifyCueCallback: shaka.extern.TextParser.ModifyCueCallback
  * }}
  *
  * @description
@@ -1319,6 +1359,10 @@ shaka.extern.StreamingConfiguration;
  *   time.
  *   <br><br>
  *   This value defaults to <code>true</code>.
+ * @property {shaka.extern.TextParser.ModifyCueCallback} modifyCueCallback
+ *    A callback called for each cue after it is parsed, but right before it
+ *    is appended to the presentation.
+ *    Gives a chance for client-side editing of cue text, cue timing, etc.
  * @exportDoc
  */
 shaka.extern.MediaSourceConfiguration;
