@@ -1147,7 +1147,7 @@ shaka.extern.ManifestConfiguration;
  *   stallEnabled: boolean,
  *   stallThreshold: number,
  *   stallSkip: number,
- *   useNativeHlsOnSafari: boolean,
+ *   useNativeHlsForFairPlay: boolean,
  *   inaccurateManifestTolerance: number,
  *   lowLatencyMode: boolean,
  *   autoLowLatencyMode: boolean,
@@ -1159,6 +1159,10 @@ shaka.extern.ManifestConfiguration;
  *   maxDisabledTime: number,
  *   parsePrftBox: boolean,
  *   segmentPrefetchLimit: number,
+ *   prefetchAudioLanguages: !Array<string>,
+ *   disableAudioPrefetch: boolean,
+ *   disableTextPrefetch: boolean,
+ *   disableVideoPrefetch: boolean,
  *   liveSync: boolean,
  *   liveSyncMaxLatency: number,
  *   liveSyncPlaybackRate: number,
@@ -1167,7 +1171,10 @@ shaka.extern.ManifestConfiguration;
  *   liveSyncPanicMode: boolean,
  *   liveSyncPanicThreshold: number,
  *   allowMediaSourceRecoveries: boolean,
- *   minTimeBetweenRecoveries: number
+ *   minTimeBetweenRecoveries: number,
+ *   vodDynamicPlaybackRate: boolean,
+ *   vodDynamicPlaybackRateLowBufferRate: number,
+ *   vodDynamicPlaybackRateBufferRatio: number
  * }}
  *
  * @description
@@ -1236,12 +1243,13 @@ shaka.extern.ManifestConfiguration;
  *   been detected.  If 0, the player will pause and immediately play instead of
  *   seeking.  A value of 0 is recommended and provided as default on TV
  *   platforms (WebOS, Tizen, Chromecast, etc).
- * @property {boolean} useNativeHlsOnSafari
+ * @property {boolean} useNativeHlsForFairPlay
  *   Desktop Safari has both MediaSource and their native HLS implementation.
  *   Depending on the application's needs, it may prefer one over the other.
  *   Warning when disabled: Where single-key DRM streams work fine, multi-keys
  *   streams is showing unexpected behaviours (stall, audio playing with video
  *   freezes, ...). Use with care.
+ *   Defaults to <code>true</code>.
  * @property {number} inaccurateManifestTolerance
  *   The maximum difference, in seconds, between the times in the manifest and
  *   the times in the segments.  Larger values allow us to compensate for more
@@ -1279,11 +1287,26 @@ shaka.extern.ManifestConfiguration;
  *   start date will not change, and would save parsing the segment multiple
  *   times needlessly.
  *   Defaults to <code>false</code>.
- * @property {boolean} segmentPrefetchLimit
+ * @property {number} segmentPrefetchLimit
  *   The maximum number of segments for each active stream to be prefetched
  *   ahead of playhead in parallel.
  *   If <code>0</code>, the segments will be fetched sequentially.
  *   Defaults to <code>0</code>.
+ * @property {!Array<string>} prefetchAudioLanguages
+ *   The audio languages to prefetch.
+ *   Defaults to an empty array.
+ * @property {boolean} disableAudioPrefetch
+ *   If set and prefetch limit is defined, it will prevent from prefetching data
+ *   for audio.
+ *   Defaults to <code>false</code>.
+ * @property {boolean} disableTextPrefetch
+ *   If set and prefetch limit is defined, it will prevent from prefetching data
+ *   for text.
+ *   Defaults to <code>false</code>.
+ * @property {boolean} disableVideoPrefetch
+ *   If set and prefetch limit is defined, it will prevent from prefetching data
+ *   for video.
+ *   Defaults to <code>false</code>.
  * @property {boolean} liveSync
  *   Enable the live stream sync against the live edge by changing the playback
  *   rate. Defaults to <code>false</code>.
@@ -1318,6 +1341,17 @@ shaka.extern.ManifestConfiguration;
  *   The minimum time between recoveries when VIDEO_ERROR is reached, in
  *   seconds.
  *   Defaults to <code>5</code>.
+ * @property {boolean} vodDynamicPlaybackRate
+ *   Adapt the playback rate of the player to keep the buffer full. Defaults to
+ *   <code>false</code>.
+ * @property {number} vodDynamicPlaybackRateLowBufferRate
+ *   Playback rate to use if the buffer is too small. Defaults to
+ *   <code>0.95</code>.
+ * @property {number} vodDynamicPlaybackRateBufferRatio
+ *   Ratio of the <code>bufferingGoal</code> as the low threshold for
+ *   setting the playback rate to
+ *   <code>vodDynamicPlaybackRateLowBufferRate</code>.
+ *   Defaults to <code>0.5</code>.
  * @exportDoc
  */
 shaka.extern.StreamingConfiguration;
@@ -1496,7 +1530,8 @@ shaka.extern.AdvancedAbrConfiguration;
  *   enabled: boolean,
  *   useHeaders: boolean,
  *   sessionId: string,
- *   contentId: string
+ *   contentId: string,
+ *   rtpSafetyFactor: number
  * }}
  *
  * @description
@@ -1519,6 +1554,9 @@ shaka.extern.AdvancedAbrConfiguration;
  *   characters. This value is consistent across multiple different sessions and
  *   devices and is defined and updated at the discretion of the service
  *   provider.
+ * @property {number} rtpSafetyFactor
+ *   RTP safety factor.
+ *   Defaults to <code>5</code>.
  * @exportDoc
  */
 shaka.extern.CmcdConfiguration;

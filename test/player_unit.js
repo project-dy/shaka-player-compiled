@@ -683,7 +683,6 @@ describe('Player', () => {
         video.canPlayType.and.returnValue('maybe');
         spyOn(shaka.util.Platform, 'anyMediaElement').and.returnValue(video);
         spyOn(shaka.util.Platform, 'supportsMediaSource').and.returnValue(true);
-        spyOn(shaka.util.Platform, 'isApple').and.returnValue(false);
         // Make sure player.load() resolves for src=
         spyOn(shaka.util.MediaReadyState, 'waitForReadyState').and.callFake(
             (mediaElement, readyState, eventManager, callback) => {
@@ -693,7 +692,6 @@ describe('Player', () => {
         player.configure({
           streaming: {
             preferNativeHls: true,
-            useNativeHlsOnSafari: false,
           },
         });
 
@@ -705,12 +703,10 @@ describe('Player', () => {
       it('does not apply to non-HLS streams', async () => {
         video.canPlayType.and.returnValue('maybe');
         spyOn(shaka.util.Platform, 'supportsMediaSource').and.returnValue(true);
-        spyOn(shaka.util.Platform, 'isApple').and.returnValue(false);
 
         player.configure({
           streaming: {
             preferNativeHls: true,
-            useNativeHlsOnSafari: false,
           },
         });
 
@@ -1233,6 +1229,16 @@ describe('Player', () => {
           .toBe(100);
       expect(player.getConfiguration().drm.retryParameters.baseDelay)
           .toBe(100);
+    });
+  });
+
+  describe('preload', () => {
+    it('performs tasks during preload and not load', async () => {
+      const preloadManager = await player.preload(
+          fakeManifestUri, 0, fakeMimeType);
+      await preloadManager.waitForFinish();
+      shaka.media.ManifestParser.registerParserByMime(fakeMimeType, fail);
+      await player.load(preloadManager);
     });
   });
 
@@ -3520,7 +3526,7 @@ describe('Player', () => {
 
         manifest.addVariant(1, (variant) => {
           variant.addVideo(2, (stream) => {
-            stream.size(200, 1024);
+            stream.size(1024, 1024);
           });
         });
 
